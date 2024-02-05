@@ -33,10 +33,11 @@ def get_coord(coord, event):
     elif event.key == pygame.K_DOWN:
         y_coord -= step if y_coord - step >= -90 else y_coord
     elif event.key == pygame.K_LEFT:
-        x_coord -= step if x_coord - step >= -180 else x_coord
+        x_coord = x_coord - step if x_coord - step >= -180 else 180
     elif event.key == pygame.K_RIGHT:
-        x_coord += step if x_coord + step <= 180 else x_coord
+        x_coord = x_coord + step if x_coord + step <= 180 else -180
     return f'{x_coord},{y_coord}'
+
 
 if __name__ == '__main__':
     running = True
