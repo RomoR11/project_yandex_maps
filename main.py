@@ -20,8 +20,15 @@ with open(map_file, "wb") as file:
 pygame.init()
 screen = pygame.display.set_mode((600, 450))
 screen.blit(pygame.image.load(map_file), (0, 0))
+
+
+def get_step(z):
+    return (1 - z / 21) * 4
+
+
 if __name__ == '__main__':
     running = True
+    step = get_step(params['z'])
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -34,8 +41,38 @@ if __name__ == '__main__':
                         with open(map_file, "wb") as file:
                             file.write(response.content)
                         screen.blit(pygame.image.load(map_file), (0, 0))
+                        step = get_step(params['z'])
                 elif event.key == pygame.K_PAGEDOWN:
                     params['z'] -= 1 if params['z'] > 0 else 0
+                    response = requests.get(url=map_request, params=params)
+                    if response.status_code == 200:
+                        with open(map_file, "wb") as file:
+                            file.write(response.content)
+                        screen.blit(pygame.image.load(map_file), (0, 0))
+                        step = get_step(params['z'])
+                elif event.key == pygame.K_UP:
+                    params['ll'] = f'{params["ll"].split(",")[0]},{float(params["ll"].split(",")[1]) + step}'
+                    response = requests.get(url=map_request, params=params)
+                    if response.status_code == 200:
+                        with open(map_file, "wb") as file:
+                            file.write(response.content)
+                        screen.blit(pygame.image.load(map_file), (0, 0))
+                elif event.key == pygame.K_DOWN:
+                    params['ll'] = f'{params["ll"].split(",")[0]},{float(params["ll"].split(",")[1]) - step}'
+                    response = requests.get(url=map_request, params=params)
+                    if response.status_code == 200:
+                        with open(map_file, "wb") as file:
+                            file.write(response.content)
+                        screen.blit(pygame.image.load(map_file), (0, 0))
+                elif event.key == pygame.K_LEFT:
+                    params['ll'] = f'{float(params["ll"].split(",")[0]) - step},{params["ll"].split(",")[1]}'
+                    response = requests.get(url=map_request, params=params)
+                    if response.status_code == 200:
+                        with open(map_file, "wb") as file:
+                            file.write(response.content)
+                        screen.blit(pygame.image.load(map_file), (0, 0))
+                elif event.key == pygame.K_RIGHT:
+                    params['ll'] = f'{float(params["ll"].split(",")[0]) + step},{params["ll"].split(",")[1]}'
                     response = requests.get(url=map_request, params=params)
                     if response.status_code == 200:
                         with open(map_file, "wb") as file:
