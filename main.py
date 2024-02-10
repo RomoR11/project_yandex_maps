@@ -5,6 +5,7 @@ import requests
 
 params = {'ll': '28.332373,57.819140',
           'z': 6, 'l': 'map'}
+change_l = {'map': 'sat', 'sat': 'hybrid', 'hybrid': 'map'}
 map_request = "http://static-maps.yandex.ru/1.x"
 response = requests.get(url=map_request, params=params)
 
@@ -86,6 +87,27 @@ if __name__ == '__main__':
                         screen.blit(pygame.image.load(map_file), (0, 0))
                 elif event.key == pygame.K_RIGHT:
                     params['ll'] = get_coord([float(i) for i in params['ll'].split(',')], event)
+                    response = requests.get(url=map_request, params=params)
+                    if response.status_code == 200:
+                        with open(map_file, "wb") as file:
+                            file.write(response.content)
+                        screen.blit(pygame.image.load(map_file), (0, 0))
+                elif event.key == pygame.K_1:
+                    params['l'] = 'map'
+                    response = requests.get(url=map_request, params=params)
+                    if response.status_code == 200:
+                        with open(map_file, "wb") as file:
+                            file.write(response.content)
+                        screen.blit(pygame.image.load(map_file), (0, 0))
+                elif event.key == pygame.K_2:
+                    params['l'] = 'sat'
+                    response = requests.get(url=map_request, params=params)
+                    if response.status_code == 200:
+                        with open(map_file, "wb") as file:
+                            file.write(response.content)
+                        screen.blit(pygame.image.load(map_file), (0, 0))
+                elif event.key == pygame.K_3:
+                    params['l'] = 'skl'
                     response = requests.get(url=map_request, params=params)
                     if response.status_code == 200:
                         with open(map_file, "wb") as file:
