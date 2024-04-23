@@ -19,15 +19,22 @@ map_file = "map.png"
 with open(map_file, "wb") as file:
     file.write(response.content)
 pygame.init()
-screen = pygame.display.set_mode((600, 500))
+screen = pygame.display.set_mode((600, 550))
 input_rect, search_rect = pygame.Rect((5, 455, 505, 40)), pygame.Rect((515, 455, 80, 40))
+del_rect = pygame.Rect((515, 505, 80, 40))
 pygame.draw.rect(screen, 'white', (5, 455, 505, 40))
 pygame.draw.rect(screen, 'grey', (515, 455, 80, 40))
+pygame.draw.rect(screen, 'grey', (515, 505, 80, 40))
 font = pygame.font.Font(None, 25)
 string_rendered = font.render('Искать', 1, pygame.Color('black'))
 intro_rect = string_rendered.get_rect()
 intro_rect.x = 530
 intro_rect.y = 465
+screen.blit(string_rendered, intro_rect)
+string_rendered = font.render('Сброс', 1, pygame.Color('black'))
+intro_rect = string_rendered.get_rect()
+intro_rect.x = 530
+intro_rect.y = 515
 screen.blit(string_rendered, intro_rect)
 screen.blit(pygame.image.load(map_file), (0, 0))
 active = False
@@ -77,11 +84,20 @@ if __name__ == '__main__':
                 if search_rect.collidepoint(event.pos):
                     active = False
                     params['ll'] = find_search(search)
-                    if 'pt' in params.keys():
+                    if 'pt' in params.keys() and params['pt'] == '':
+                        params['pt'] = f'{params["ll"]},pm2rdl'
+                    elif 'pt' in params.keys():
                         params['pt'] += f'~{params["ll"]},pm2rdl'
                     else:
                         params['pt'] = f'{params["ll"]},pm2rdl'
                     search = ''
+                    response = requests.get(url=map_request, params=params)
+                    if response.status_code == 200:
+                        with open(map_file, "wb") as file:
+                            file.write(response.content)
+                        screen.blit(pygame.image.load(map_file), (0, 0))
+                elif del_rect.collidepoint(event.pos):
+                    params['pt'] = params['pt'][:params['pt'].rfind('~')] if '~' in params['pt'] else ''
                     response = requests.get(url=map_request, params=params)
                     if response.status_code == 200:
                         with open(map_file, "wb") as file:
