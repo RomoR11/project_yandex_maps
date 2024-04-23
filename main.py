@@ -77,7 +77,10 @@ if __name__ == '__main__':
                 if search_rect.collidepoint(event.pos):
                     active = False
                     params['ll'] = find_search(search)
-                    params['pt'] = f'{params["ll"]},pm2rdl'
+                    if 'pt' in params.keys():
+                        params['pt'] += f'~{params["ll"]},pm2rdl'
+                    else:
+                        params['pt'] = f'{params["ll"]},pm2rdl'
                     search = ''
                     response = requests.get(url=map_request, params=params)
                     if response.status_code == 200:
