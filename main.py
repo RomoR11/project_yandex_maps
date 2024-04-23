@@ -19,8 +19,19 @@ map_file = "map.png"
 with open(map_file, "wb") as file:
     file.write(response.content)
 pygame.init()
-screen = pygame.display.set_mode((600, 450))
+screen = pygame.display.set_mode((600, 500))
+input_rect, search_rect = pygame.Rect((5, 455, 505, 40)), pygame.Rect((515, 455, 80, 40))
+pygame.draw.rect(screen, 'white', (5, 455, 505, 40))
+pygame.draw.rect(screen, 'grey', (515, 455, 80, 40))
+font = pygame.font.Font(None, 25)
+string_rendered = font.render('Искать', 1, pygame.Color('black'))
+intro_rect = string_rendered.get_rect()
+intro_rect.x = 530
+intro_rect.y = 465
+screen.blit(string_rendered, intro_rect)
 screen.blit(pygame.image.load(map_file), (0, 0))
+active = False
+search = ''
 
 
 def get_step(z):
@@ -40,6 +51,16 @@ def get_coord(coord, event):
     return f'{x_coord},{y_coord}'
 
 
+def find_search(text):
+    geocoder_params = {
+        "apikey": "40d1649f-0493-4b70-98ba-98533de7710b",
+        "geocode": text,
+        "format": "json"}
+    resp = requests.get("http://geocode-maps.yandex.ru/1.x/", params=geocoder_params).json()
+    x, y = resp["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]["Point"]["pos"].split(" ")
+    return ','.join([x, y])
+
+
 if __name__ == '__main__':
     running = True
     step = get_step(params['z'])
@@ -47,7 +68,28 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.type == pygame.MOUSEMOTION:
+                if input_rect.collidepoint(event.pos):
+                    active = True
+                else:
+                    active = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if search_rect.collidepoint(event.pos):
+                    active = False
+                    params['ll'] = find_search(search)
+                    params['pt'] = f'{params["ll"]},pm2rdl'
+                    search = ''
+                    response = requests.get(url=map_request, params=params)
+                    if response.status_code == 200:
+                        with open(map_file, "wb") as file:
+                            file.write(response.content)
+                        screen.blit(pygame.image.load(map_file), (0, 0))
             elif event.type == pygame.KEYDOWN:
+                if active:
+                    if event.key == pygame.K_BACKSPACE:
+                        search = search[:-1]
+                    else:
+                        search += event.unicode
                 if event.key == pygame.K_PAGEUP:
                     params['z'] += 1 if params['z'] < 21 else 0
                     response = requests.get(url=map_request, params=params)
